@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8.7)
 project(googleAssistant)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -O3 -fpermissive")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -O3 -fpermissive -D_GLIBCXX_USE_CXX11_ABI=0")
 
 # add include files
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -41,6 +41,7 @@ add_executable(
 target_link_libraries(
     ${BIN_NAME}
     snowboy-detect
+    tatlas
     pthread
     pulse
     pulse-simple
