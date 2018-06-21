@@ -36,7 +36,7 @@ void audioCapture::initialize() {
     int error;
 
     if (!(pHandle = pa_simple_new(NULL, "PulseCapture", PA_STREAM_RECORD, NULL, "record", &ss, NULL, &attr, &error))) {
-        printf("%s failed. %s\n",__FUNCTION__, pa_strerror(error));
+        fprintf(stderr, "%s failed. %s\n", __FUNCTION__, pa_strerror(error));
     }
 }
 
@@ -65,7 +65,7 @@ uint8_t* audioCapture::get(size_t size) {
         int error;
 
         if (pa_simple_read(pHandle, pBuff, size, &error) < 0) {
-            printf("%s failed. %s\n",__FUNCTION__, pa_strerror(error));
+            fprintf(stderr, "%s failed. %s\n",__FUNCTION__, pa_strerror(error));
             return NULL;
         }
 

@@ -9,8 +9,8 @@ public:
     keywordDetector(audioCapture *ac);
     ~keywordDetector();
 
-    bool startKeywordDetection();
-    void stopKeywordDetection();
+    bool start();
+    void stop();
 
 private:
     audioCapture            *pAc;

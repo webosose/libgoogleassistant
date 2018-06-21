@@ -1,3 +1,14 @@
+/*
+ * For fixing follow errors.
+ *
+ * error: undefined reference to 'snowboy::SnowboyDetect::SnowboyDetect(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+ * error: undefined reference to 'snowboy::SnowboyDetect::SetSensitivity(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
+ *
+ * The snowboy-detect library doesn't support cxx11
+ *
+ */
+#define _GLIBCXX_USE_CXX11_ABI 0
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -5,8 +16,8 @@
 
 #include "keywordDetector.h"
 
-#define resource_filename "common.res"
-#define model_snowboy "snowboy.umdl"
+#define resource_filename "/etc/googleAssistant/common.res"
+#define model_snowboy "/etc/googleAssistant/snowboy.umdl"
 #define sensitivity_str "0.5"
 #define audio_gain 1.0
 #define apply_frontend false
@@ -24,7 +35,7 @@ mDetector(resource_filename, model_snowboy) {
 keywordDetector::~keywordDetector() {
 }
 
-bool keywordDetector::startKeywordDetection() {
+bool keywordDetector::start() {
     pAc->flush();
 
     bIsKdFinished = false;
@@ -44,7 +55,7 @@ bool keywordDetector::startKeywordDetection() {
             break;
         }
 
-        usleep(25000);
+        usleep(100);
     }
 
     if (!bIsKdFinished) {
@@ -54,6 +65,6 @@ bool keywordDetector::startKeywordDetection() {
     return true;
 }
 
-void keywordDetector::stopKeywordDetection() {
+void keywordDetector::stop() {
     bIsKdFinished = true;
 }

@@ -1,13 +1,17 @@
 #include "keywordDetector.h"
+#include "googleAssistant.h"
 
 int main(int argc, char **argv) {
     audioCapture mAc;
-    keywordDetector kd(&mAc);
+    audioPlayback mAp;
 
-    fprintf(stderr, "Ready..\n");
+    keywordDetector kd(&mAc);
+    googleAssistant ga(&mAc, &mAp);
 
     do {
-        if ( !kd.startKeywordDetection() ) break;
+        fprintf(stderr, "Ready..\n");
+        if ( !kd.start() ) break;
+        if ( !ga.start() ) break;
     } while(true);
 
     return 0;
