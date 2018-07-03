@@ -20,7 +20,8 @@ using google::assistant::embedded::v1alpha2::DialogStateOut_MicrophoneMode_DIALO
 // This is the indivisual credential json file from google
 #define CREDENTIALS_FILE_PATH   "/etc/googleAssistant/credentials.json"
 
-googleAssistant::googleAssistant(audioCapture *ac, audioPlayback *ap):
+googleAssistant::googleAssistant(audioCapture *ac, audioPlayback *ap, eventHandler *parent):
+eventHandler(parent),
 pAc(ac),
 pAp(ap) {
 }
@@ -46,12 +47,15 @@ bool googleAssistant::start() {
     bIsConversation = true;
 
     do {
+        postState("recording");
+
         bIsCaptureFinished = false;
 
         // 1. Read credentials file and check it.
         std::ifstream crefile(CREDENTIALS_FILE_PATH);
         if (!crefile) {
             GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" does not exist.", __FUNCTION__, CREDENTIALS_FILE_PATH);
+            postError(CONFIG_ERROR);
             return false;
         }
 
@@ -62,6 +66,7 @@ bool googleAssistant::start() {
         std::shared_ptr<grpc::CallCredentials> call_credentials(grpc::GoogleRefreshTokenCredentials(cre));
         if (call_credentials.get() == nullptr) {
             GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" is invalid.", __FUNCTION__, CREDENTIALS_FILE_PATH);
+            postError(AUTH_ERROR);
             return false;
         }
 
@@ -101,6 +106,7 @@ bool googleAssistant::start() {
             } else {
                 GOOGLEAI_LOG_ERROR("%s microphone error has occured.", __FUNCTION__);
                 bIsSrFinished = true;
+                postError(MICROPHONE_ERROR);
                 break;
             }
 
@@ -132,6 +138,25 @@ void googleAssistant::stop() {
     bIsConversation     = false;
 }
 
+void googleAssistant::postState(std::string state) {
+    // post state change event
+    std::string value = std::string("{\"state\":\"") + state + "\"}";
+    throwEvent((void *)subscription_key_state, (void *)value.c_str());
+}
+
+void googleAssistant::postError(ERROR_CODE e) {
+    // post error event
+    std::string value = std::string("{\"errorCode\":") + std::to_string(e) +
+                                    ",\"errorText\":\"" + errorStr(e) + "\"}";
+    throwEvent((void *)subscription_key_response, (void *)value.c_str());
+}
+
+void googleAssistant::postResponse(std::string response) {
+    // post error event
+    std::string value = std::string("{\"provider\":\"googleassistant\",\"response\":") + response + "}";
+    throwEvent((void *)subscription_key_response, (void *)value.c_str());
+}
+
 void* googleAssistant::listenWorker(void *ctx) {
     GOOGLEAI_LOG_INFO("%s waiting for response...", __FUNCTION__);
 
@@ -143,23 +168,32 @@ void* googleAssistant::listenWorker(void *ctx) {
 
     AssistResponse response;
     while (!g->bIsSrFinished && g->pStream->Read(&response)) {  // Returns false when no more to read.
-        if (response.event_type() == AssistResponse_EventType_END_OF_UTTERANCE && !g->bIsCaptureFinished) g->bIsCaptureFinished = true;
+        if (response.event_type() == AssistResponse_EventType_END_OF_UTTERANCE && !g->bIsCaptureFinished) {
+            g->bIsCaptureFinished = true;
+            g->postState("thinking");
+        }
 
         if (response.has_audio_out()) {
             g->bIsCaptureFinished = true;
 
             uint8_t *buff     = response.audio_out().audio_data().c_str();
             size_t  audioSize = response.audio_out().audio_data().length();
-            g->pAp->put(buff, audioSize);
+            if (!g->pAp->put(buff, audioSize)) {
+                GOOGLEAI_LOG_ERROR("audio playback error has occured.");
+                g->postError(AUDIO_ERROR);
+            }
         } 
 
         if (response.has_dialog_state_out()) {
             GOOGLEAI_LOG_DEBUG("Response text: %s", response.dialog_state_out().supplemental_display_text().c_str());
             micMode = response.dialog_state_out().microphone_mode();
+            g->postState("answering");
+            g->postResponse(std::string("{\"displayText\":\"") + response.dialog_state_out().supplemental_display_text() + "\"}");
         }
 
         if (response.has_device_action()) {
             GOOGLEAI_LOG_DEBUG("Device action: %s", response.device_action().device_request_json().c_str());
+            g->postResponse(std::string("{\"deviceAction\":") + response.device_action().device_request_json() + "}");
         }
 
         std::string partial;
@@ -171,6 +205,7 @@ void* googleAssistant::listenWorker(void *ctx) {
 
         if (partial.length()) {
             GOOGLEAI_LOG_DEBUG("Partial: %s", partial.c_str());
+            g->postResponse(std::string("{\"partial\":\"") + partial + "\"}");
         }
     }
 

@@ -1,18 +1,14 @@
-#include "keywordDetector.h"
-#include "googleAssistant.h"
+#include "speechRecognitionWorker.h"
 
 int main(int argc, char **argv) {
-    audioCapture mAc;
-    audioPlayback mAp;
+    speechRecognitionWorker sr;
 
-    keywordDetector kd(&mAc);
-    googleAssistant ga(&mAc, &mAp);
+    // continuous mode, use keywordDetect
+    sr.start("continuous", true);
 
-    do {
-        fprintf(stderr, "Ready..\n");
-        if ( !kd.start() ) break;
-        if ( !ga.start() ) break;
-    } while(true);
+    std::cout << "Ready.." << std::endl;
+
+    sr.join();
 
     return 0;
 }

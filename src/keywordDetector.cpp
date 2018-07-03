@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <glib.h>
 
 #include "keywordDetector.h"
 
@@ -26,7 +27,8 @@
 
 bool keywordDetector::bIsKdFinished = false;
 
-keywordDetector::keywordDetector(audioCapture *ac):
+keywordDetector::keywordDetector(audioCapture *ac, eventHandler *parent):
+eventHandler(parent),
 pAc(ac),
 mDetector(resource_filename, model_snowboy) {
   mDetector.SetSensitivity(sensitivity_str);
@@ -53,7 +55,8 @@ bool keywordDetector::start() {
             }
         }
         else {
-            GOOGLEAI_LOG_ERROR("audio capture error");
+            GOOGLEAI_LOG_ERROR("%s microphone error has occured.", __FUNCTION__);
+            postError(MICROPHONE_ERROR);
             break;
         }
 
@@ -69,4 +72,11 @@ bool keywordDetector::start() {
 
 void keywordDetector::stop() {
     bIsKdFinished = true;
+}
+
+void keywordDetector::postError(ERROR_CODE e) {
+    // post error event
+    char* value = g_strdup_printf("{\"errorCode\":%d,\"errorText\":\"%s\"}", e, errorStr(e));
+    throwEvent((void *)subscription_key_response, (void *)value);
+    g_free(value);
 }
