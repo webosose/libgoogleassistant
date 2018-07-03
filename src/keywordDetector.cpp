@@ -16,6 +16,8 @@
 
 #include "keywordDetector.h"
 
+#include "logging.h"
+
 #define resource_filename "/etc/googleAssistant/common.res"
 #define model_snowboy "/etc/googleAssistant/snowboy.umdl"
 #define sensitivity_str "0.5"
@@ -46,12 +48,12 @@ bool keywordDetector::start() {
         if(pcmBuffer) {
             int result = mDetector.RunDetection((int16_t *)pcmBuffer, pAc->getCapacity()/sizeof(int16_t));
             if (result == 1) {
-                fprintf(stderr, ">>>>> Hotword detected! <<<<<\n");
+                GOOGLEAI_LOG_DEBUG("keyword detected");
                 bIsKdFinished = true;
             }
         }
         else {
-            fprintf(stderr, "audio capture error\n");
+            GOOGLEAI_LOG_ERROR("audio capture error");
             break;
         }
 

@@ -5,6 +5,8 @@
 
 #include "audioPlayback.h"
 
+#include "logging.h"
+
 audioPlayback::audioPlayback(uint32_t capacity, uint32_t rate, uint32_t channels):
 pHandle(NULL),
 mCapacity(capacity),
@@ -33,7 +35,7 @@ void audioPlayback::initialize() {
     int error;
 
     if (!(pHandle = pa_simple_new(NULL, "PulsePlayback", PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, &attr, &error))) {
-        fprintf(stderr, "%s failed. %s\n",__FUNCTION__, pa_strerror(error));
+        GOOGLEAI_LOG_ERROR("%s failed. %s", __FUNCTION__, pa_strerror(error));
     }
 }
 
@@ -57,7 +59,7 @@ bool audioPlayback::put(uint8_t *buff, size_t size) {
         size_t leftSize = size;
         while ((int32_t)leftSize > 0) {
             if (pa_simple_write(pHandle, buff, (leftSize >= mCapacity) ? mCapacity : leftSize, &error) < 0) {
-                fprintf(stderr, "%s failed. %s\n", __FUNCTION__, pa_strerror(error));
+                GOOGLEAI_LOG_ERROR("%s failed. %s", __FUNCTION__, pa_strerror(error));
                 return false;
             }
 

@@ -5,6 +5,8 @@
 
 #include "googleAssistant.h"
 
+#include "logging.h"
+
 using google::assistant::embedded::v1alpha2::AudioInConfig;
 using google::assistant::embedded::v1alpha2::AudioOutConfig;
 using google::assistant::embedded::v1alpha2::AssistResponse_EventType_END_OF_UTTERANCE;
@@ -33,7 +35,7 @@ std::shared_ptr<grpc::Channel> googleAssistant::createChannel(const std::string&
 
     auto creds = grpc::SslCredentials(ssl_opts);
     std::string server = host + ":443";
-    std::cout << "create custom channel(" << server << ", creds, arg)" << std::endl;
+    GOOGLEAI_LOG_INFO("%s create custom channel(%s)", __FUNCTION__, server.c_str());
 
     grpc::ChannelArguments channel_args;
 
@@ -49,7 +51,7 @@ bool googleAssistant::start() {
         // 1. Read credentials file and check it.
         std::ifstream crefile(CREDENTIALS_FILE_PATH);
         if (!crefile) {
-            std::cerr << "credentials file \"" << CREDENTIALS_FILE_PATH  << "\" does not exist." << std::endl;
+            GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" does not exist.", __FUNCTION__, CREDENTIALS_FILE_PATH);
             return false;
         }
 
@@ -59,7 +61,7 @@ bool googleAssistant::start() {
 
         std::shared_ptr<grpc::CallCredentials> call_credentials(grpc::GoogleRefreshTokenCredentials(cre));
         if (call_credentials.get() == nullptr) {
-            std::cerr << "credentials file \"" << CREDENTIALS_FILE_PATH << "\" is invalid." << std::endl;
+            GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" is invalid.", __FUNCTION__, CREDENTIALS_FILE_PATH);
             return false;
         }
 
@@ -86,7 +88,7 @@ bool googleAssistant::start() {
         assist_config->mutable_device_config()->set_device_id("my_webos");
 
         pStream->Write(request);
-        std::cout << "wrote first request: " << request.ShortDebugString() << std::endl;
+        GOOGLEAI_LOG_INFO("%s wrote first request: %s", __FUNCTION__, request.ShortDebugString().c_str());
 
         if ( pthread_create(&mListenThread, NULL, listenWorker, this) ) break;
 
@@ -97,7 +99,7 @@ bool googleAssistant::start() {
                 request.set_audio_in(pcmBuffer, pAc->getCapacity());
                 pStream->Write(request);
             } else {
-                std::cerr << "audio capture error" << std::endl;
+                GOOGLEAI_LOG_ERROR("%s microphone error has occured.", __FUNCTION__);
                 bIsSrFinished = true;
                 break;
             }
@@ -121,8 +123,6 @@ bool googleAssistant::start() {
 
     if (!bIsCaptureFinished) return false;
 
-    std::cout << "finished." << std::endl;
-
     return true;
 }
 
@@ -133,7 +133,7 @@ void googleAssistant::stop() {
 }
 
 void* googleAssistant::listenWorker(void *ctx) {
-    std::cout << "waiting for response..." << std::endl;
+    GOOGLEAI_LOG_INFO("%s waiting for response...", __FUNCTION__);
 
     googleAssistant* g = (googleAssistant *)ctx;
 
@@ -154,12 +154,12 @@ void* googleAssistant::listenWorker(void *ctx) {
         } 
 
         if (response.has_dialog_state_out()) {
-            std::cout << "Response text: " << response.dialog_state_out().supplemental_display_text() << std::endl;
+            GOOGLEAI_LOG_DEBUG("Response text: %s", response.dialog_state_out().supplemental_display_text().c_str());
             micMode = response.dialog_state_out().microphone_mode();
         }
 
         if (response.has_device_action()) {
-            std::cout << "device action: " << response.device_action().device_request_json() << std::endl;
+            GOOGLEAI_LOG_DEBUG("Device action: %s", response.device_action().device_request_json().c_str());
         }
 
         std::string partial;
@@ -169,13 +169,15 @@ void* googleAssistant::listenWorker(void *ctx) {
             }
         }
 
-        if (partial.length()) std::cout << "Partial: " << partial << std::endl;
+        if (partial.length()) {
+            GOOGLEAI_LOG_DEBUG("Partial: %s", partial.c_str());
+        }
     }
 
     grpc::Status status = g->pStream->Finish();
     if (!status.ok()) {
         // Report the RPC failure.
-        std::cerr << "finish failed: " << status.error_message() << std::endl;
+        GOOGLEAI_LOG_WARNING("%s finish failed", __FUNCTION__);
     }
 
     if (micMode == DialogStateOut_MicrophoneMode_DIALOG_FOLLOW_ON) {
