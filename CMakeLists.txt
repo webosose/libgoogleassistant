@@ -34,9 +34,6 @@ link_directories(
 add_library(snowboy-detect STATIC IMPORTED)
 set_property(TARGET snowboy-detect PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/libsnowboy-detect.a)
 
-# create executable file
-set(BIN_NAME googleAssistant)
-
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
 set(SRC_LIST
@@ -47,7 +44,6 @@ set(SRC_LIST
     ${SRC_DIR}/googleAssistant.cpp
     ${SRC_DIR}/keywordDetector.cpp
     ${SRC_DIR}/speechRecognitionWorker.cpp
-    ${SRC_DIR}/main.cpp
 )
 
 # add google apis
@@ -58,6 +54,8 @@ file(GLOB_RECURSE LOGGING ${GOOGLEAPIS_PATH}/logging/*.cc)
 file(GLOB_RECURSE LONGRUNNING ${GOOGLEAPIS_PATH}/longrunning/*.cc)
 file(GLOB_RECURSE ASSISTANT ${GOOGLEAPIS_PATH}/assistant/embedded/v1alpha2/*.cc)
 
+# create sample excutable binary
+set(BIN_NAME googleAssistant_sample)
 add_executable(
     ${BIN_NAME}
     ${SRC_LIST}
@@ -67,6 +65,7 @@ add_executable(
     ${LOGGING}
     ${LONGRUNNING}
     ${ASSISTANT}
+    ${SRC_DIR}/main.cpp
 )
 
 target_link_libraries(
@@ -82,3 +81,65 @@ target_link_libraries(
     ${JSONC_LDFLAGS}
     ${PMLOGLIB_LDFLAGS}
 )
+
+# create shared library object
+set(LIB_NAME googleassistant)
+add_library(
+    ${LIB_NAME} SHARED
+    ${SRC_LIST}
+    ${API}
+    ${RPC}
+    ${TYPE}
+    ${LOGGING}
+    ${LONGRUNNING}
+    ${ASSISTANT}
+)
+
+target_link_libraries(
+    ${LIB_NAME}
+    grpc++
+    pthread
+    protobuf
+    pulse
+    pulse-simple
+    snowboy-detect
+    tatlas
+    ${GLIB2_LDFLAGS}
+    ${JSONC_LDFLAGS}
+    ${PMLOGLIB_LDFLAGS}
+)
+
+set_target_properties(
+    ${LIB_NAME}
+    PROPERTIES
+    VERSION 1.0.0
+    SOVERSION 1
+)
+
+configure_file(${CMAKE_SOURCE_DIR}/googleassistant.pc.in googleassistant.pc @ONLY)
+
+# install library
+install(
+    TARGETS ${LIB_NAME}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(
+    PROGRAMS ${CMAKE_SOURCE_DIR}/lib/libtatlas.so
+    DESTINATION /usr/local/atlas/lib
+)
+
+file(GLOB_RECURSE PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include/*.h)
+install(
+    FILES ${PUBLIC_HEADERS}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+)
+
+install(
+    FILES 
+    ${CMAKE_SOURCE_DIR}/resources/keywordActivation/common.res
+    ${CMAKE_SOURCE_DIR}/resources/keywordActivation/snowboy.umdl
+    DESTINATION /etc/${PROJECT_NAME}
+)
+
+install(FILES ${CMAKE_BINARY_DIR}/googleassistant.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
