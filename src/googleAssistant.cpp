@@ -14,12 +14,6 @@ using google::assistant::embedded::v1alpha2::DialogStateOut_MicrophoneMode;
 using google::assistant::embedded::v1alpha2::DialogStateOut_MicrophoneMode_CLOSE_MICROPHONE;
 using google::assistant::embedded::v1alpha2::DialogStateOut_MicrophoneMode_DIALOG_FOLLOW_ON;
 
-// This is the endpoint to send gRPC data.
-#define ASSISTANT_ENDPOINT      "embeddedassistant.googleapis.com"
-
-// This is the indivisual credential json file from google
-#define CREDENTIALS_FILE_PATH   "/etc/googleAssistant/credentials.json"
-
 googleAssistant::googleAssistant(audioCapture *ac, audioPlayback *ap, eventHandler *parent):
 eventHandler(parent),
 pAc(ac),
@@ -52,9 +46,10 @@ bool googleAssistant::start() {
         bIsCaptureFinished = false;
 
         // 1. Read credentials file and check it.
-        std::ifstream crefile(CREDENTIALS_FILE_PATH);
+        char *credentials = getenv("GOOGLEAI_CREDENTIALS");
+        std::ifstream crefile(credentials);
         if (!crefile) {
-            GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" does not exist.", __FUNCTION__, CREDENTIALS_FILE_PATH);
+            GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" does not exist.", __FUNCTION__, credentials);
             postError(CONFIG_ERROR);
             return false;
         }
@@ -65,13 +60,19 @@ bool googleAssistant::start() {
 
         std::shared_ptr<grpc::CallCredentials> call_credentials(grpc::GoogleRefreshTokenCredentials(cre));
         if (call_credentials.get() == nullptr) {
-            GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" is invalid.", __FUNCTION__, CREDENTIALS_FILE_PATH);
+            GOOGLEAI_LOG_ERROR("%s credentials file \"%s\" is invalid.", __FUNCTION__, credentials);
             postError(AUTH_ERROR);
             return false;
         }
 
         // 2. Connect to google assistant api server
-        std::shared_ptr<grpc::Channel> channel = createChannel(ASSISTANT_ENDPOINT);
+        char *endpoint = getenv("GOOGLEAI_ENDPOINT");
+        if (!endpoint) {
+            GOOGLEAI_LOG_ERROR("%s endpoint \"%s\" is invalid.", __FUNCTION__, endpoint);
+            postError(CONFIG_ERROR);
+            return false;
+        }
+        std::shared_ptr<grpc::Channel> channel = createChannel(endpoint);
         std::unique_ptr<EmbeddedAssistant::Stub> assistant(EmbeddedAssistant::NewStub(channel));
 
         // 3. Begin a stream.
@@ -87,10 +88,24 @@ bool googleAssistant::start() {
         assist_config->mutable_audio_in_config()->set_sample_rate_hertz(pAc->getBitrate());
         assist_config->mutable_audio_out_config()->set_encoding(AudioOutConfig::LINEAR16);
         assist_config->mutable_audio_out_config()->set_sample_rate_hertz(pAp->getBitrate());
-        assist_config->mutable_dialog_state_in()->set_language_code("ko-KR");
 
-        assist_config->mutable_device_config()->set_device_model_id("webos");
-        assist_config->mutable_device_config()->set_device_id("my_webos");
+        char *language = getenv("GOOGLEAI_LANGUAGE");
+        if (!language) {
+            GOOGLEAI_LOG_ERROR("%s need language code", __FUNCTION__);
+            postError(CONFIG_ERROR);
+            return false;
+        }
+        assist_config->mutable_dialog_state_in()->set_language_code(language);
+
+        char *device_model = getenv("GOOGLEAI_DEVICE_MODEL");
+        char *device_id    = getenv("GOOGLEAI_DEVICE_ID");
+        if (!device_model || !device_id) {
+            GOOGLEAI_LOG_ERROR("%s need device model id and device id", __FUNCTION__);
+            postError(CONFIG_ERROR);
+            return false;
+        }
+        assist_config->mutable_device_config()->set_device_model_id(device_model);
+        assist_config->mutable_device_config()->set_device_id(device_id);
 
         pStream->Write(request);
         GOOGLEAI_LOG_INFO("%s wrote first request: %s", __FUNCTION__, request.ShortDebugString().c_str());

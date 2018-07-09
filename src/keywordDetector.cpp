@@ -20,8 +20,6 @@
 #include "logging.h"
 
 #define resource_filename "/etc/googleAssistant/common.res"
-#define model_snowboy "/etc/googleAssistant/snowboy.umdl"
-#define sensitivity_str "0.5"
 #define audio_gain 1.0
 #define apply_frontend false
 
@@ -30,8 +28,8 @@ bool keywordDetector::bIsKdFinished = false;
 keywordDetector::keywordDetector(audioCapture *ac, eventHandler *parent):
 eventHandler(parent),
 pAc(ac),
-mDetector(resource_filename, model_snowboy) {
-  mDetector.SetSensitivity(sensitivity_str);
+mDetector(resource_filename, getenv("KEYWORD_DETECT_MODEL")) {
+  mDetector.SetSensitivity(getenv("KEYWORD_DETECT_SENSITIVITY"));
   mDetector.SetAudioGain(audio_gain);
   mDetector.ApplyFrontend(apply_frontend);
 }
@@ -49,7 +47,7 @@ bool keywordDetector::start() {
 
         if(pcmBuffer) {
             int result = mDetector.RunDetection((int16_t *)pcmBuffer, pAc->getCapacity()/sizeof(int16_t));
-            if (result == 1) {
+            if (result >= 1) {
                 GOOGLEAI_LOG_DEBUG("keyword detected");
                 bIsKdFinished = true;
             }
