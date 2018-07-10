@@ -1,0 +1,6 @@
+{
+    "id": "<YOUR DEVICE INSTANCE ID>",
+    "model_id": "<YOUR DEVICE MODEL ID>",
+    "nickname": "webos",
+    "clientType": "SDK_SERVICE"
+}

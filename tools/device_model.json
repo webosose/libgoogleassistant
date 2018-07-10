@@ -1,0 +1,11 @@
+{
+  "project_id": "<YOUR PROJECT ID>",
+  "device_model_id": "<YOUR DEVICE MODEL ID>",
+  "manifest": {
+    "manufacturer": "Assistant SDK developer",
+    "product_name": "Assistant SDK robot",
+    "device_description": "Assistant SDK robot device"
+  },
+  "device_type": "action.devices.types.LIGHT",
+  "traits": ["action.devices.traits.OnOff"]
+}

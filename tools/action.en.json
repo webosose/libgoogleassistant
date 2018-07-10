@@ -1,0 +1,58 @@
+{
+    "locale": "en",
+    "manifest": {
+        "displayName": "webOS OSE",
+        "invocationName": "webOS OSE",
+        "category": "PRODUCTIVITY"
+    },
+    "actions": [
+        {
+            "name": "com.webos.actions.Launch",
+            "availability": {
+                "deviceClasses": [
+                    {
+                        "assistantSdkDevice": {}
+                    }
+                ]
+            },
+            "intent": {
+                "name": "com.webos.intents.Launch",
+                "parameters": [
+                    {
+                        "name": "appName",
+                        "type": "SchemaOrg_Text"
+                    }
+                ],
+                "trigger": {
+                    "queryPatterns": [
+                        "launch $SchemaOrg_Text:appName",
+                        "start $SchemaOrg_Text:appName",
+                        "begin $SchemaOrg_Text:appName",
+                        "go to $SchemaOrg_Text:appName"
+                    ]
+                }
+            },
+            "fulfillment": {
+                "staticFulfillment": {
+                    "templatedResponse": {
+                        "items": [
+                            {
+                                "simpleResponse": {
+                                    "textToSpeech": "Okay"
+                                }
+                            },
+                            {
+                                "deviceExecution": {
+                                    "command": "com.webos.commands.Launch",
+                                    "params": {
+                                        "appName": "$appName"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
