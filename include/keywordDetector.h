@@ -17,6 +17,7 @@ public:
 
 private:
     void postError(ERROR_CODE e);
+    void postKeywordIndex(int idx);
 
 private:
     audioCapture            *pAc;

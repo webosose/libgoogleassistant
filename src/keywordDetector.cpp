@@ -49,6 +49,7 @@ bool keywordDetector::start() {
             int result = mDetector.RunDetection((int16_t *)pcmBuffer, pAc->getCapacity()/sizeof(int16_t));
             if (result >= 1) {
                 GOOGLEAI_LOG_DEBUG("keyword detected");
+                postKeywordIndex(result);
                 bIsKdFinished = true;
             }
         }
@@ -75,6 +76,13 @@ void keywordDetector::stop() {
 void keywordDetector::postError(ERROR_CODE e) {
     // post error event
     char* value = g_strdup_printf("{\"errorCode\":%d,\"errorText\":\"%s\"}", e, errorStr(e));
+    throwEvent((void *)subscription_key_response, (void *)value);
+    g_free(value);
+}
+
+void keywordDetector::postKeywordIndex(int idx) {
+    // post error event
+    char* value = g_strdup_printf("{\"provider\":\"googleassistant\",\"response\":{\"keywordDetected\":%d}}", idx);
     throwEvent((void *)subscription_key_response, (void *)value);
     g_free(value);
 }
