@@ -146,7 +146,7 @@ void speechRecognitionWorker::setState(STATE s) {
 void speechRecognitionWorker::catchEvent(void *key, void *value) {
     if (!strcmp((char *)key, subscription_key_state)) {
         json_object *object = json_tokener_parse((char *)value);
-        if (is_error(object)) return;
+        if (!object) return;
 
         const char *state  = json_object_get_string(json_object_object_get(object, "state"));
         if (!strcmp(state, "recording")) setState(RECORDING);
