@@ -1,42 +1,72 @@
-libgoogleassistant
-==================
+# libgoogleassistant
 
-Summary
--------
+## Summary
+
 Google Assistant library for webOS OSE
 Refer to the [Assistant SDK documentation](https://developers.google.com/assistant/sdk/) for more information.
 
-Setup instructions (very important)
------------------------------------
-1. Get credentials file. It must be an end-user's credentials.
- * Create google account.
- * Go to the [Actions Console](https://console.actions.google.com/) and register your device model, following [these instructions](https://developers.google.com/assistant/sdk/guides/service/python/embed/register-device)
-   ( Please ensure all of that instructions. create project, register device model, enable api, set activity control download credentials json file etc.
-     you can use `register_device_model.sh` instead of web browser ui if you already have project. refer device_model.json template. )
- * Download OAuth-2.0 Client ID credentials file and move it to /etc/googleAssistant/client_secret.json on your device via scp.
- * Move /etc/googleAssistant folder
- * Run `get_credentials.sh`. It will create the file `credentials.json`.
+## Setup instructions (very important)
+
+### Step #1. Get credentials file. It must be an end-user's credentials.
+
+* Create google account. Configure a developer project and account Settings. following [these instructions](https://developers.google.com/assistant/sdk/guides/service/python/embed/config-dev-project-and-account)
+* Go to the [Actions Console](https://console.actions.google.com/) and register your device model. following [these instructions](https://developers.google.com/assistant/sdk/guides/service/python/embed/register-device)
+```
+Please ensure all of that instructions.
+Create project, Enable api, Register device model, set activity control and download credentials json file etc.
+```
+* Download OAuth-2.0 Client ID credentials file and move it to ``/etc/googleAssistant/client_secret.json`` on your device via scp.
+```bash
+On your local pc
+$ scp <downloaded json file> root@<your device ip>:/etc/googleAssistant/client_secret.json
+
+On your device
+$ cd /etc/googleAssistant
+$ ./get_credentials.sh
+```
+Input the code from showed url then It will create the ``credentials.json`` file.
 
 
-3. Run `register_device_id.sh`. It will register device instance(unique) id using the rest api. refer device_id.json template.
+### Step #2. Register device id.
+
+```bash
+$ cd /etc/googleAssistant
+$ vi ./device_id.json
+```
+Modify id(device instance string. eg. my_webos) and model_id(registered by step #1) fields in device_id.json
+
+```bash
+$ ./register_device_id.sh
+```
+It will register your device id
 
 
-4. Fill the device model and device id in /var/systemd/system/env/ai.env
+### Step #3. Fill the device model and device id for aiservice.
+
+```bash
+$ vi /var/systemd/system/env/ai.env
+```
+Modify GOOGLEAI_DEVICE_MODEL(registered by step #1) and GOOGLEAI_DEVICE_ID(registered by step #2)
 
 
-5. Reboot device or restart service daemon.
- * $ reboot
-   or
- * $ systemctl restart ai
+### Step #4. Reboot device or restart service daemon
+
+```bash
+$ reboot
+```
+or
+```bash
+$ systemctl restart ai
+```
 
 
-6. Start ai by luna api.
- * Refer [README.md] of com.webos.service.ai
+### Step #5. Start ai by luna api
+Refer ``README.md`` of com.webos.service.ai
 
 
-Options
--------
+## Options
+
 Google assistant supports [custom device actions](https://developers.google.com/assistant/sdk/guides/service/python/extend/custom-actions)
-Refer the /etc/googleAssistant/action.en.json
+Refer the ``/etc/googleAssistant/action.en.json``
 
 You can download [gactions CLI tool](https://developers.google.com/actions/tools/gactions-cli)
