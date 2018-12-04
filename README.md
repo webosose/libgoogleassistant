@@ -40,6 +40,29 @@ $ ./register_device_id.sh
 ```
 It will register your device id
 
+If you receive an error during device registration, you have to enable the Google Assistant API at link that given from response. 
+
+Below is an error message.
+```bash
+{
+  "error": {
+    "code": 403,
+    "message": "Google Assistant API has not been used in project <project No> before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/embeddedassistant.googleapis.com/overview?project=<project No> then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.",
+    "status": "PERMISSION_DENIED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Google developers console API activation",
+            "url": "https://console.developers.google.com/apis/api/embeddedassistant.googleapis.com/overview?project=<project No>"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ### Step #3. Fill the device model and device id for aiservice.
 
