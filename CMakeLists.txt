@@ -126,7 +126,7 @@ install(
 
 install(
     PROGRAMS ${CMAKE_SOURCE_DIR}/lib/libtatlas.so
-    DESTINATION /usr/local/atlas/lib
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 file(GLOB_RECURSE PUBLIC_HEADERS ${CMAKE_SOURCE_DIR}/include/*.h)
