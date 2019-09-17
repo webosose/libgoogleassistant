@@ -41,13 +41,26 @@ $ ./register_device_id.sh
 It will register your device id
 
 
-### Step #3. Fill the device model and device id for aiservice.
+### Step #3. Change (or override) the device model and device id for aiservice.
 
+Change a configuration file and reboot
+```bash
+$ vi /etc/systemd/system.conf.d/ai.conf
+-------------------------------------------------
+...
+DefaultEnvironment=GOOGLEAI_DEVICE_MODEL={registered by step #1}
+DefaultEnvironment=GOOGLEAI_DEVICE_ID={registered by step #2}
+-------------------------------------------------
+$ reboot
+```
+Or, add following variables to the file to override the configuration.
 ```bash
 $ vi /var/systemd/system/env/ai.env
+-------------------------------------------------
+GOOGLEAI_DEVICE_MODEL="{registered by step #1}"
+GOOGLEAI_DEVICE_ID="{registered by step #2}"
+-------------------------------------------------
 ```
-Modify GOOGLEAI_DEVICE_MODEL(registered by step #1) and GOOGLEAI_DEVICE_ID(registered by step #2)
-
 
 ### Step #4. Reboot device or restart service daemon
 
