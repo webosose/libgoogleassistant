@@ -1,6 +1,5 @@
 Open Source Software Package:
 - name: webOSOSE-libgoogleassistant
-  version: 1.0.0
   source: https://github.com/webosose/libgoogleassistant
   license: Apache-2.0
 - name: snowboy
@@ -14,7 +13,6 @@ Open Source Software Package:
   license: BSD-3-Clause
   comment: Use prebuilt atlas for snowboy
 - name: assistant-sdk-cpp
-  version: 0.0.1
   source: https://github.com/googlesamples/assistant-sdk-cpp
   license: Apache-2.0
   file: src/assistant/run_assistant_audio.cc
