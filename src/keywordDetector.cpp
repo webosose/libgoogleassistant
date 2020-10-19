@@ -59,7 +59,7 @@ bool keywordDetector::start() {
     bIsKdFinished = false;
 
     while(!bIsKdFinished) {
-        char *pcmBuffer = pAc->get();
+        uint8_t *pcmBuffer = pAc->get();
 
         if(pcmBuffer) {
             int result = mDetector.RunDetection((int16_t *)pcmBuffer, pAc->getCapacity()/sizeof(int16_t));

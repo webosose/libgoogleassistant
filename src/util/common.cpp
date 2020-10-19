@@ -17,7 +17,7 @@
 #include "common.h"
 
 namespace speechRecognition {
-    char* stateStr(STATE s) {
+    const char* stateStr(STATE s) {
         switch (s) {
             case IDLE:           return "idle";
             case WAITACTIVATION: return "waitActivation";
@@ -30,7 +30,7 @@ namespace speechRecognition {
         return "Not allowed state";
     }
 
-    char* errorStr(ERROR_CODE e) {
+    const char* errorStr(ERROR_CODE e) {
         switch (e) {
             case NONE:              return "Not error";
             case INVALID_PARAM:     return "Invalid parameters";
@@ -49,6 +49,6 @@ namespace speechRecognition {
         return "Unknown error";
     }
 
-    char* subscription_key_state    = "SPEECHRECOGNITION_STATE";
-    char* subscription_key_response = "SPEECHRECOGNITION_RESPONSE";
+    const char* subscription_key_state    = "SPEECHRECOGNITION_STATE";
+    const char* subscription_key_response = "SPEECHRECOGNITION_RESPONSE";
 }

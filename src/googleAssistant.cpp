@@ -33,7 +33,11 @@ using google::assistant::embedded::v1alpha2::DialogStateOut_MicrophoneMode_DIALO
 googleAssistant::googleAssistant(audioCapture *ac, audioPlayback *ap, eventHandler *parent):
 eventHandler(parent),
 pAc(ac),
-pAp(ap) {
+pAp(ap),
+mListenThread(),
+bIsCaptureFinished(false),
+bIsSrFinished(false),
+bIsConversation(false) {
 }
 
 googleAssistant::~googleAssistant() {
@@ -207,13 +211,13 @@ void* googleAssistant::listenWorker(void *ctx) {
         if (response.has_audio_out()) {
             g->bIsCaptureFinished = true;
 
-            uint8_t *buff     = response.audio_out().audio_data().c_str();
+            uint8_t *buff     = (uint8_t *)(response.audio_out().audio_data().c_str());
             size_t  audioSize = response.audio_out().audio_data().length();
             if (!g->pAp->put(buff, audioSize)) {
                 GOOGLEAI_LOG_ERROR("audio playback error has occured.");
                 g->postError(AUDIO_ERROR);
             }
-        } 
+        }
 
         if (response.has_dialog_state_out()) {
             GOOGLEAI_LOG_DEBUG("Response text: %s", response.dialog_state_out().supplemental_display_text().c_str());

@@ -28,7 +28,7 @@ namespace speechRecognition {
         ANSWERING
     };
 
-    char* stateStr(STATE s);
+    const char* stateStr(STATE s);
 
     enum ERROR_CODE {
         NONE                =  0,
@@ -45,10 +45,10 @@ namespace speechRecognition {
         CAMERA_ERROR        = -11
     };
 
-    char* errorStr(ERROR_CODE e);
+    const char* errorStr(ERROR_CODE e);
 
-    extern char* subscription_key_state;
-    extern char* subscription_key_response;
+    extern const char* subscription_key_state;
+    extern const char* subscription_key_response;
 };
 
 class eventHandler {

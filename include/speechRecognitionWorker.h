@@ -32,7 +32,7 @@ public:
     speechRecognitionWorker(eventHandler *parent = NULL);
     ~speechRecognitionWorker();
 
-    ERROR_CODE start(char *mode, bool uKd);
+    ERROR_CODE start(const char *mode, bool uKd);
     ERROR_CODE stop();
 
     bool       join();

@@ -56,7 +56,7 @@ void speechRecognitionWorker::finalize() {
     if ( pAudioPlayback )       { delete pAudioPlayback;   pAudioPlayback = NULL; }
 }
 
-ERROR_CODE speechRecognitionWorker::start(char *mode, bool uKd) {
+ERROR_CODE speechRecognitionWorker::start(const char *mode, bool uKd) {
     if (!bIsStarted) {
 
         if (!strcmp(mode, "continuous"))  bIsContinuous = true;
