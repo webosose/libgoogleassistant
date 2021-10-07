@@ -45,7 +45,7 @@ It will register your device id
 
 Change a configuration file and reboot
 ```bash
-$ vi /etc/systemd/system.conf.d/ai.conf
+$ vi /etc/systemd/system.conf.d/googleassistant.conf
 -------------------------------------------------
 ...
 DefaultEnvironment=GOOGLEAI_DEVICE_MODEL={registered by step #1}

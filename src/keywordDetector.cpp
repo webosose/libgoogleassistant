@@ -1,4 +1,4 @@
-// Copyright (c) 2018 LG Electronics, Inc.
+// Copyright (c) 2018-2021 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-/*
- * For fixing follow errors.
- *
- * error: undefined reference to 'snowboy::SnowboyDetect::SnowboyDetect(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
- * error: undefined reference to 'snowboy::SnowboyDetect::SetSensitivity(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)'
- *
- * The snowboy-detect library doesn't support cxx11
- *
- */
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +24,6 @@
 
 #include "logging.h"
 
-#define resource_filename "/etc/googleAssistant/common.res"
 #define audio_gain 1.0
 #define apply_frontend false
 
@@ -44,7 +32,7 @@ bool keywordDetector::bIsKdFinished = false;
 keywordDetector::keywordDetector(audioCapture *ac, eventHandler *parent):
 eventHandler(parent),
 pAc(ac),
-mDetector(resource_filename, getenv("KEYWORD_DETECT_MODEL")) {
+mDetector(getenv("KEYWORD_COMMON_RESOURCE"), getenv("KEYWORD_DETECT_MODEL")) {
   mDetector.SetSensitivity(getenv("KEYWORD_DETECT_SENSITIVITY"));
   mDetector.SetAudioGain(audio_gain);
   mDetector.ApplyFrontend(apply_frontend);
