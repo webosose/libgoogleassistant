@@ -1,4 +1,4 @@
-// Copyright (c) 2018 LG Electronics, Inc.
+// Copyright (c) 2018-2022 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ ERROR_CODE speechRecognitionWorker::stop() {
 
 bool speechRecognitionWorker::join() {
     if (pWorkThread) {
-        int status;
+        int *status;
         pthread_join(*pWorkThread, (void **)&status);
         delete pWorkThread;
         pWorkThread = NULL;
